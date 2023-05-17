@@ -1,3 +1,9 @@
+import json
+import numpy as np
+import matplotlib.pyplot as plt
+
+from functions import one_hot_decode
+
 class NeuralNetwork:
     def __init__(self, layers, cost_function, accuracy_function, batch_size, learning_rate):
         self.layers = layers
@@ -21,9 +27,14 @@ class NeuralNetwork:
             
     def get_accuracy(self, inputs, true_outputs):
         """Get the network's accuracy."""
-        guess_outputs = self.get_guess_outputs(inputs)
-        return self.accuracy_function(true_outputs, guess_outputs)
+        final_guesses = self.get_final_guesses(inputs)
+        return self.accuracy_function(one_hot_decode(true_outputs), final_guesses)
         
+    def get_final_guesses(self, inputs):
+        """Get the network's final digit guesses."""
+        guess_outputs = self.get_guess_outputs(inputs)
+        return one_hot_decode(guess_outputs)
+
     def get_guess_outputs(self, inputs):
         """Get the network's forward-propagation guess output."""
         layer_activations = self.get_layer_activations(inputs)
@@ -88,4 +99,43 @@ class NeuralNetwork:
         """Apply gradients for each layer."""
         for layer in self.layers:
             layer.apply_gradients(self.learning_rate)
+
+    def load_trained_params(self, file_name):
+        with open(file_name, mode="r") as f:
+            trained_params = json.load(f)
+
+        for (i, layer) in enumerate(self.layers):
+            layer.weights = np.array(trained_params[str(i)]["weights"], dtype=np.float64)
+            layer.biases = np.array(trained_params[str(i)]["biases"], dtype=np.float64)
+
+    def save_trained_params(self, file_name):
+        trained_params = {}
+        for (i, layer) in enumerate(self.layers):
+            trained_params[i] = {
+                "weights" : layer.weights.tolist(),
+                "biases" : layer.biases.tolist()
+            }
+
+        with open(file_name, mode="w") as f:
+            json.dump(trained_params, f)
+
+    def show_guesses(self, inputs, true_outputs):
+        fig, axs = plt.subplots(
+            nrows=15, ncols=15, figsize=(16, 16),
+            subplot_kw=dict(xticks=[], yticks=[]),
+            gridspec_kw=dict(hspace=0.01, wspace=0.01)
+        )
+
+        final_guesses = self.get_final_guesses(inputs)
+        true_digits = one_hot_decode(true_outputs)
+
+        for (i, axi) in enumerate(axs.flat):
+            axi.imshow(inputs[:, i].reshape(8, 8), cmap="binary")
+            axi.text(
+                0.1, 0.1, final_guesses[i], transform=axi.transAxes,
+                color=("green" if final_guesses[i] == true_digits[i] else "red")
+            )
+            axi.text(0.75, 0.1, true_digits[i], transform=axi.transAxes)
+
+        plt.show()
             
