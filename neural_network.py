@@ -2,7 +2,7 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-from functions import one_hot_decode
+from functions import *
 
 class NeuralNetwork:
     def __init__(self, layers, cost_function, accuracy_function, batch_size, learning_rate):
@@ -15,7 +15,9 @@ class NeuralNetwork:
         self.learning_rate = learning_rate
         
     def train(self, inputs, true_outputs, iterations):
-        """Learn for the specified number of iterations."""
+        """Train for the specified number of iterations."""
+        inputs, true_outputs = self.process_data(inputs, true_outputs)
+
         for i in range(iterations):
             if (i % 100 == 0):
                 accuracy = self.get_accuracy(inputs, true_outputs)
@@ -24,6 +26,10 @@ class NeuralNetwork:
             
             input_batch, true_output_batch = self.get_training_batch(i, inputs, true_outputs)
             self.learning_step(input_batch, true_output_batch)
+
+    def process_data(self, inputs, true_outputs):
+        """Transpose the input array (col = image), and one-hot encode the target array."""
+        return inputs.T, one_hot_encode(true_outputs)
             
     def get_accuracy(self, inputs, true_outputs):
         """Get the network's accuracy."""
@@ -51,7 +57,9 @@ class NeuralNetwork:
         """Return the next training batch."""
         start = (iteration * self.batch_size) % inputs.shape[1]
         end = min(start + self.batch_size, inputs.shape[1])
-        return inputs[:, start : end], true_outputs[:, start : end]
+
+        input_batch, true_output_batch = inputs[:, start : end], true_outputs[:, start : end]
+        return input_batch, true_output_batch
     
     def learning_step(self, inputs, true_outputs):
         """Do a learning step. Calculate and apply gradients."""
@@ -120,6 +128,8 @@ class NeuralNetwork:
             json.dump(trained_params, f)
 
     def show_guesses(self, inputs, true_outputs):
+        inputs, true_outputs = self.process_data(inputs, true_outputs)
+        
         fig, axs = plt.subplots(
             nrows=15, ncols=15, figsize=(16, 16),
             subplot_kw=dict(xticks=[], yticks=[]),

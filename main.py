@@ -19,7 +19,7 @@ def load_data():
 
     X_train, y_train = X[train_inds], y[train_inds]
     X_test, y_test = X[test_inds], y[test_inds]
-    return X_train, y_train, X_test, y_test 
+    return X_train, y_train, X_test, y_test
 
 # Load data.
 X_train, y_train, X_test, y_test = load_data()
@@ -38,11 +38,9 @@ neural_network = NeuralNetwork(
 file_name = "trained_params.json"
 neural_network.load_trained_params(file_name)
 
-# Train.
-neural_network.train(X_train.T, one_hot_encode(y_train), 5_000)
-
-# Save trained params.
+# Train and save trained params.
+neural_network.train(X_train, y_train, 10_00)
 neural_network.save_trained_params(file_name)
 
 # Show network outputs.
-neural_network.show_guesses(X_test.T, one_hot_encode(y_test))
+neural_network.show_guesses(X_test, y_test)
