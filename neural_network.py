@@ -11,7 +11,7 @@ class NeuralNetwork:
     def train(self, inputs, true_outputs, iterations):
         """Learn for the specified number of iterations."""
         for i in range(iterations):
-            if (i % 25 == 0):
+            if (i % 100 == 0):
                 accuracy = self.get_accuracy(inputs, true_outputs)
                 cost = self.get_cost(inputs, true_outputs)
                 print(f"{i}. accuracy={accuracy}\tcost={cost}")
