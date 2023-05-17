@@ -26,4 +26,4 @@ def one_hot_decode(x):
     return decoded
 
 def get_percent_accuracy(true_output, guess_output):
-    return np.mean(one_hot_decode(true_output) == one_hot_decode(guess_output))
+    return np.mean(true_output == guess_output)
