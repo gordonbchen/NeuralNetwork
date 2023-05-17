@@ -14,22 +14,33 @@ class NeuralNetwork:
         self.batch_size = batch_size
         self.learning_rate = learning_rate
         
-    def train(self, inputs, true_outputs, iterations):
-        """Train for the specified number of iterations."""
+    def train(self, inputs, true_outputs, epochs):
+        """Train for the specified number of epochs."""
         inputs, true_outputs = self.process_data(inputs, true_outputs)
 
-        for i in range(iterations):
-            if (i % 100 == 0):
-                accuracy = self.get_accuracy(inputs, true_outputs)
-                cost = self.get_cost(inputs, true_outputs)
-                print(f"{i}. accuracy={accuracy}\tcost={cost}")
+        for epoch in range(epochs):
+            # Display accuracy and cost.
+            accuracy = self.get_accuracy(inputs, true_outputs)
+            cost = self.get_cost(inputs, true_outputs)
+            print(f"Epoch {epoch}: accuracy={accuracy} \t cost={cost}")
             
-            input_batch, true_output_batch = self.get_training_batch(i, inputs, true_outputs)
-            self.learning_step(input_batch, true_output_batch)
+            # Train through all data.
+            for start_index in range(0, inputs.shape[1], self.batch_size):
+                input_batch, true_output_batch = self.get_training_batch(start_index, inputs, true_outputs)
+                self.learning_step(input_batch, true_output_batch)
+
+            # Shuffle data at the end of each epoch.
+            inputs, true_outputs = self.shuffle_data(inputs, true_outputs)
 
     def process_data(self, inputs, true_outputs):
         """Transpose the input array (col = image), and one-hot encode the target array."""
         return inputs.T, one_hot_encode(true_outputs)
+    
+    def shuffle_data(self, inputs, true_outputs):
+        """Shuffle the data, maintaining inputs[i] maps to true_outputs[i]."""
+        inds = np.arange(inputs.shape[1])
+        np.random.shuffle(inds)
+        return inputs[:, inds], true_outputs[:, inds]
             
     def get_accuracy(self, inputs, true_outputs):
         """Get the network's accuracy."""
@@ -53,12 +64,11 @@ class NeuralNetwork:
             layer_activations.append(activations)
         return layer_activations[1:]
 
-    def get_training_batch(self, iteration, inputs, true_outputs):
+    def get_training_batch(self, start_index, inputs, true_outputs):
         """Return the next training batch."""
-        start = (iteration * self.batch_size) % inputs.shape[1]
-        end = min(start + self.batch_size, inputs.shape[1])
+        end = start_index + self.batch_size
 
-        input_batch, true_output_batch = inputs[:, start : end], true_outputs[:, start : end]
+        input_batch, true_output_batch = inputs[:, start_index : end], true_outputs[:, start_index : end]
         return input_batch, true_output_batch
     
     def learning_step(self, inputs, true_outputs):
@@ -129,7 +139,7 @@ class NeuralNetwork:
 
     def show_guesses(self, inputs, true_outputs):
         inputs, true_outputs = self.process_data(inputs, true_outputs)
-        
+
         fig, axs = plt.subplots(
             nrows=15, ncols=15, figsize=(16, 16),
             subplot_kw=dict(xticks=[], yticks=[]),

@@ -39,7 +39,7 @@ file_name = "trained_params.json"
 neural_network.load_trained_params(file_name)
 
 # Train and save trained params.
-neural_network.train(X_train, y_train, 10_00)
+neural_network.train(X_train, y_train, 1_000)
 neural_network.save_trained_params(file_name)
 
 # Show network outputs.
