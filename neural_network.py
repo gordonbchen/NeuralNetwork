@@ -32,6 +32,7 @@ class NeuralNetwork:
             # Shuffle data at the end of each epoch.
             inputs, true_outputs = self.shuffle_data(inputs, true_outputs)
 
+
     def process_data(self, inputs, true_outputs):
         """Transpose the input array (col = image), and one-hot encode the target array."""
         return inputs.T, one_hot_encode(true_outputs)
@@ -42,11 +43,17 @@ class NeuralNetwork:
         np.random.shuffle(inds)
         return inputs[:, inds], true_outputs[:, inds]
             
+
     def get_accuracy(self, inputs, true_outputs):
         """Get the network's accuracy."""
         final_guesses = self.get_final_guesses(inputs)
         return self.accuracy_function(one_hot_decode(true_outputs), final_guesses)
         
+    def get_cost(self, inputs, true_outputs):
+        """Get the network cost."""
+        guess_outputs = self.get_guess_outputs(inputs)
+        return self.cost_function(true_outputs, guess_outputs)
+    
     def get_final_guesses(self, inputs):
         """Get the network's final digit guesses."""
         guess_outputs = self.get_guess_outputs(inputs)
@@ -64,6 +71,7 @@ class NeuralNetwork:
             layer_activations.append(activations)
         return layer_activations[1:]
 
+
     def get_training_batch(self, start_index, inputs, true_outputs):
         """Return the next training batch."""
         end = start_index + self.batch_size
@@ -71,6 +79,7 @@ class NeuralNetwork:
         input_batch, true_output_batch = inputs[:, start_index : end], true_outputs[:, start_index : end]
         return input_batch, true_output_batch
     
+
     def learning_step(self, inputs, true_outputs):
         """Do a learning step. Calculate and apply gradients."""
         self.calc_gradients(inputs, true_outputs)
@@ -84,11 +93,6 @@ class NeuralNetwork:
         for layer in self.layers:
             self.calc_weight_gradients(layer, inputs, true_outputs, base_cost, h)
             self.calc_bias_gradients(layer, inputs, true_outputs, base_cost, h)
-            
-    def get_cost(self, inputs, true_outputs):
-        """Get the network cost."""
-        guess_outputs = self.get_guess_outputs(inputs)
-        return self.cost_function(true_outputs, guess_outputs)
             
     def calc_weight_gradients(self, layer, inputs, true_outputs, base_cost, h):
         """Calculate weight gradients."""
@@ -118,6 +122,7 @@ class NeuralNetwork:
         for layer in self.layers:
             layer.apply_gradients(self.learning_rate)
 
+
     def load_trained_params(self, file_name):
         with open(file_name, mode="r") as f:
             trained_params = json.load(f)
@@ -136,6 +141,7 @@ class NeuralNetwork:
 
         with open(file_name, mode="w") as f:
             json.dump(trained_params, f)
+
 
     def show_guesses(self, inputs, true_outputs):
         inputs, true_outputs = self.process_data(inputs, true_outputs)
