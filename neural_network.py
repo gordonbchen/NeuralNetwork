@@ -1,167 +1,98 @@
-import json
 import numpy as np
-import matplotlib.pyplot as plt
 
-from functions import *
+import functions
 
 class NeuralNetwork:
-    def __init__(self, layers, cost_function, accuracy_function, batch_size, learning_rate):
-        self.layers = layers
-        
-        self.cost_function = cost_function
-        self.accuracy_function = accuracy_function
-        
-        self.batch_size = batch_size
-        self.learning_rate = learning_rate
-        
-    def train(self, inputs, true_outputs, epochs):
-        """Train for the specified number of epochs."""
-        inputs, true_outputs = self.process_data(inputs, true_outputs)
+    def __init__(self):
+        """Initialize weights and biases, and hyperparameters."""
+        # Layer 1.
+        self.W1 = np.random.random(12 * 784).reshape(12, 784) - 0.5
+        self.b1 = np.random.random(12).reshape(12, 1) - 0.5
 
+        self.f1 = functions.ReLU
+        self.f1_deriv = functions.ReLU_deriv
+
+        # Layer 2.
+        self.W2 = np.random.random(10 * 12).reshape(10, 12) - 0.5
+        self.b2 = np.random.random(10).reshape(10, 1) - 0.5
+
+        self.f2 = functions.softmax
+        self.f2_deriv = functions.softmax_deriv
+
+        # Cost and accuracy functions.
+        self.f_cost = functions.mean_squared_error
+        self.f_cost_deriv = functions.mean_squared_error_deriv
+
+        self.f_accuracy = functions.get_percent_accuracy
+
+        # Hyperparams.
+        self.learning_rate = 0.25
+        self.mini_batch_size = 128
+
+    def forward_prop(self, X):
+        """Forward-prop to get the network's output."""
+        X = X.T
+
+        Z1 = np.dot(self.W1, X) + self.b1
+        A1 = self.f1(Z1)
+
+        Z2 = np.dot(self.W2, A1) + self.b2
+        A2 = self.f2(Z2)
+        return Z1, A1, Z2, A2
+    
+    def back_prop(self, Z1, A1, Z2, A2, X, y):
+        """Back-prop to find the network's gradient."""
+        one_hot_Y = functions.one_hot_encode(y)
+
+        # TODO: check cost function and softmax derivatives.
+        dA2 = self.f_cost_deriv(one_hot_Y, A2)
+        dZ2 = self.f2_deriv(dA2)
+
+        dW2 = np.dot(dZ2, A1.T) / y.size
+        db2 = np.mean(dZ2, axis=1)[:, np.newaxis]
+
+        dA1 = np.dot(self.W2.T, dZ2)
+        dZ1 = dA1 * self.f1_deriv(dA1)
+
+        dW1 = np.dot(dZ1, X) / y.size
+        db1 = np.mean(dZ1, axis=1)[:, np.newaxis]
+        return dW1, db1, dW2, db2
+    
+    def apply_gradients(self, dW1, db1, dW2, db2, learning_rate):
+        """Apply calculated gradients with a learning rate."""
+        self.W1 -= dW1 * learning_rate
+        self.b1 -= db1 * learning_rate
+        self.W2 -= dW2 * learning_rate
+        self.b2 -= db2 * learning_rate
+    
+    def gradient_descent(self, X, y):
+        """Gradient descent learning step."""
+        Z1, A1, Z2, A2 = self.forward_prop(X)
+        dW1, db1, dW2, db2 = self.back_prop(Z1, A1, Z2, A2, X, y)
+        self.apply_gradients(dW1, db1, dW2, db2, self.learning_rate)
+
+    def train(self, X, y, epochs):
+        """Train the network for the given epochs."""
         for epoch in range(epochs):
-            # Display accuracy and cost.
-            accuracy = self.get_accuracy(inputs, true_outputs)
-            cost = self.get_cost(inputs, true_outputs)
-            print(f"Epoch {epoch}: accuracy={accuracy} \t cost={cost}")
-            
-            # Train through all data.
-            for start_index in range(0, inputs.shape[1], self.batch_size):
-                input_batch, true_output_batch = self.get_training_batch(start_index, inputs, true_outputs)
-                self.learning_step(input_batch, true_output_batch)
+            for start_index in range(0, y.size, self.mini_batch_size):
+                end_index = start_index + self.mini_batch_size
+                mini_batch_X = X[start_index : end_index, :]
+                mini_batch_y = y[start_index : end_index]
 
-            # Shuffle data at the end of each epoch.
-            inputs, true_outputs = self.shuffle_data(inputs, true_outputs)
+                self.gradient_descent(mini_batch_X, mini_batch_y)
 
+            # Show accuracy and cost.
+            if (epoch % 100 == 0):
+                Z1, A1, Z2, A2 = self.forward_prop(X)
 
-    def process_data(self, inputs, true_outputs):
-        """Transpose the input array (col = image), and one-hot encode the target array."""
-        return inputs.T, one_hot_encode(true_outputs)
-    
-    def shuffle_data(self, inputs, true_outputs):
-        """Shuffle the data, maintaining inputs[i] maps to true_outputs[i]."""
-        inds = np.arange(inputs.shape[1])
-        np.random.shuffle(inds)
-        return inputs[:, inds], true_outputs[:, inds]
-            
+                predictions = functions.one_hot_decode(A2)
+                accuracy = self.f_accuracy(y, predictions)
 
-    def get_accuracy(self, inputs, true_outputs):
-        """Get the network's accuracy."""
-        final_guesses = self.get_final_guesses(inputs)
-        return self.accuracy_function(one_hot_decode(true_outputs), final_guesses)
-        
-    def get_cost(self, inputs, true_outputs):
-        """Get the network cost."""
-        guess_outputs = self.get_guess_outputs(inputs)
-        return self.cost_function(true_outputs, guess_outputs)
-    
-    def get_final_guesses(self, inputs):
-        """Get the network's final digit guesses."""
-        guess_outputs = self.get_guess_outputs(inputs)
-        return one_hot_decode(guess_outputs)
+                cost = self.f_cost(y, A2)
+                print(f"Epoch {epoch}: \t\t accuracy={accuracy} \t\t cost={cost}")
 
-    def get_guess_outputs(self, inputs):
-        """Get the network's forward-propagation guess output."""
-        layer_activations = self.get_layer_activations(inputs)
-        return layer_activations[-1]
-    
-    def get_layer_activations(self, inputs):
-        layer_activations = [inputs]
-        for layer in self.layers:
-            activations = layer.get_activations(layer_activations[-1])
-            layer_activations.append(activations)
-        return layer_activations[1:]
-
-
-    def get_training_batch(self, start_index, inputs, true_outputs):
-        """Return the next training batch."""
-        end = start_index + self.batch_size
-
-        input_batch, true_output_batch = inputs[:, start_index : end], true_outputs[:, start_index : end]
-        return input_batch, true_output_batch
-    
-
-    def learning_step(self, inputs, true_outputs):
-        """Do a learning step. Calculate and apply gradients."""
-        self.calc_gradients(inputs, true_outputs)
-        self.apply_gradients()
-    
-    def calc_gradients(self, inputs, true_outputs):
-        """Calculate gradients for all layers."""
-        h = 0.000001
-        base_cost = self.get_cost(inputs, true_outputs)
-        
-        for layer in self.layers:
-            self.calc_weight_gradients(layer, inputs, true_outputs, base_cost, h)
-            self.calc_bias_gradients(layer, inputs, true_outputs, base_cost, h)
-            
-    def calc_weight_gradients(self, layer, inputs, true_outputs, base_cost, h):
-        """Calculate weight gradients."""
-        for nrow in range(layer.weights.shape[0]):
-            for ncol in range(layer.weights.shape[1]):
-                base_weight = layer.weights[nrow, ncol]
-                layer.weights[nrow, ncol] += h
-
-                new_cost = self.get_cost(inputs, true_outputs)
-                layer.weight_gradients[nrow, ncol] = (new_cost - base_cost) / h
-                
-                layer.weights[nrow, ncol] = base_weight
-                
-    def calc_bias_gradients(self, layer, inputs, true_outputs, base_cost, h):
-        """Calculate bias gradients."""
-        for i in range(layer.biases.shape[0]):
-            base_bias = layer.biases[i, 0]
-            layer.biases[i, 0] += h
-
-            new_cost = self.get_cost(inputs, true_outputs)
-            layer.bias_gradients[i, 0] = (new_cost - base_cost) / h
-
-            layer.biases[i, 0] = base_bias
-            
-    def apply_gradients(self):
-        """Apply gradients for each layer."""
-        for layer in self.layers:
-            layer.apply_gradients(self.learning_rate)
-
-
-    def load_trained_params(self, file_name):
-        with open(file_name, mode="r") as f:
-            trained_params = json.load(f)
-
-        for (i, layer) in enumerate(self.layers):
-            layer.weights = np.array(trained_params[str(i)]["weights"], dtype=np.float64)
-            layer.biases = np.array(trained_params[str(i)]["biases"], dtype=np.float64)
-
-    def save_trained_params(self, file_name):
-        trained_params = {}
-        for (i, layer) in enumerate(self.layers):
-            trained_params[i] = {
-                "weights" : layer.weights.tolist(),
-                "biases" : layer.biases.tolist()
-            }
-
-        with open(file_name, mode="w") as f:
-            json.dump(trained_params, f)
-
-
-    def show_guesses(self, inputs, true_outputs):
-        inputs, true_outputs = self.process_data(inputs, true_outputs)
-
-        fig, axs = plt.subplots(
-            nrows=15, ncols=15, figsize=(16, 16),
-            subplot_kw=dict(xticks=[], yticks=[]),
-            gridspec_kw=dict(hspace=0.01, wspace=0.01)
-        )
-
-        final_guesses = self.get_final_guesses(inputs)
-        true_digits = one_hot_decode(true_outputs)
-
-        for (i, axi) in enumerate(axs.flat):
-            axi.imshow(inputs[:, i].reshape(8, 8), cmap="binary")
-            axi.text(
-                0.1, 0.1, final_guesses[i], transform=axi.transAxes,
-                color=("green" if final_guesses[i] == true_digits[i] else "red")
-            )
-            axi.text(0.75, 0.1, true_digits[i], transform=axi.transAxes)
-
-        plt.show()
-            
+            # Shuffle data.
+            inds = np.arange(y.size)
+            np.random.shuffle(inds)
+            X = X[inds, :]
+            y = y[inds]
