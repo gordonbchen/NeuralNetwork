@@ -27,7 +27,7 @@ class NeuralNetwork:
 
         # Hyperparams.
         self.learning_rate = 0.25
-        self.mini_batch_size = 128
+        self.mini_batch_size = 256
 
     def forward_prop(self, X):
         """Forward-prop to get the network's output."""
@@ -45,7 +45,7 @@ class NeuralNetwork:
         one_hot_Y = functions.one_hot_encode(y)
 
         # TODO: check cost function and softmax derivatives.
-        dA2 = self.f_cost_deriv(one_hot_Y, A2)
+        dA2 = self.f_cost_deriv(A2, one_hot_Y)
         dZ2 = self.f2_deriv(dA2)
 
         dW2 = np.dot(dZ2, A1.T) / y.size
@@ -88,7 +88,7 @@ class NeuralNetwork:
                 predictions = functions.one_hot_decode(A2)
                 accuracy = self.f_accuracy(y, predictions)
 
-                cost = self.f_cost(y, A2)
+                cost = self.f_cost(A2, y)
                 print(f"Epoch {epoch}: \t\t accuracy={accuracy} \t\t cost={cost}")
 
             # Shuffle data.

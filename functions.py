@@ -20,11 +20,11 @@ def softmax_deriv(Z):
     return ((col_sums - e_Z) * e_Z) / (col_sums ** 2)
 
 
-def mean_squared_error(true_output, guess_output):
-    return np.mean((true_output - guess_output) ** 2)
+def mean_squared_error(A, Y):
+    return np.mean((A - Y) ** 2)
 
-def mean_squared_error_deriv(true_output, guess_output):
-    return (2 / true_output.shape[1]) * (true_output - guess_output)
+def mean_squared_error_deriv(A, Y):
+    return (2 / Y.shape[1]) * (A - Y)
 
 
 def one_hot_encode(Y):
