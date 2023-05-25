@@ -40,12 +40,7 @@ class NeuralNetwork:
 
             # Show accuracy and cost.
             if (epoch % 10 == 0):
-                Z1, A1, Z2, A2 = self.forward_prop(X)
-
-                predictions = functions.one_hot_decode(A2)
-                accuracy = self.f_accuracy(y, predictions)
-
-                cost = self.f_cost(A2, y)
+                cost, accuracy = self.get_cost_accuracy(X, y)
                 print(f"Epoch {epoch}: \t\t accuracy={accuracy} \t\t cost={cost}")
 
             # Shuffle data.
@@ -99,6 +94,17 @@ class NeuralNetwork:
         self.W2 -= dW2 * learning_rate
         self.b2 -= db2 * learning_rate
 
+
+    def get_cost_accuracy(self, X, y):
+        Z1, A1, Z2, A2 = self.forward_prop(X)
+
+        predictions = functions.one_hot_decode(A2)
+        accuracy = self.f_accuracy(y, predictions)
+
+        cost = self.f_cost(A2, y)
+        return cost, accuracy
+
+
     def display_image_predictions(self, X, y):
         """Display the network's predictions."""
         Z1, A1, Z2, A2 = self.forward_prop(X)
@@ -119,5 +125,4 @@ class NeuralNetwork:
                 transform=axi.transAxes
             )
 
-        fig.show()
-        input()
+        plt.show()
