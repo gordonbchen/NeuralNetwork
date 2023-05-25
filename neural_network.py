@@ -1,5 +1,8 @@
 import numpy as np
+
 import matplotlib.pyplot as plt
+import sklearn.metrics
+import seaborn as sns
 
 import functions
 
@@ -38,10 +41,10 @@ class NeuralNetwork:
             # TODO: mini-batches.
             self.gradient_descent(X, y)
 
-            # Show accuracy and cost.
+            # Show accuracy.
             if (epoch % 10 == 0):
-                cost, accuracy = self.get_cost_accuracy(X, y)
-                print(f"Epoch {epoch}: \t\t accuracy={accuracy} \t\t cost={cost}")
+                accuracy = self.get_accuracy(X, y)
+                print(f"Epoch {epoch}: \t\t accuracy={accuracy}")
 
             # Shuffle data.
             inds = np.arange(y.size)
@@ -95,20 +98,20 @@ class NeuralNetwork:
         self.b2 -= db2 * learning_rate
 
 
-    def get_cost_accuracy(self, X, y):
+    def get_predictions(self, X):
         Z1, A1, Z2, A2 = self.forward_prop(X)
-
         predictions = functions.one_hot_decode(A2)
-        accuracy = self.f_accuracy(y, predictions)
+        return predictions
 
-        cost = self.f_cost(A2, y)
-        return cost, accuracy
+    def get_accuracy(self, X, y):
+        predictions = self.get_predictions(X)
+        accuracy = self.f_accuracy(y, predictions)
+        return accuracy
 
 
     def display_image_predictions(self, X, y):
         """Display the network's predictions."""
-        Z1, A1, Z2, A2 = self.forward_prop(X)
-        predictions = functions.one_hot_decode(A2)
+        predictions = self.get_predictions(X)
 
         fig, axs = plt.subplots(
             nrows=10, ncols=10,
@@ -124,5 +127,21 @@ class NeuralNetwork:
                 c=("green" if predictions[i] == y[i] else "red"),
                 transform=axi.transAxes
             )
+
+        plt.show()
+
+    def display_prediction_confusion_matrix(self, X, y):
+        nums = np.arange(10)
+
+        predictions = self.get_predictions(X)
+        confusion_matrix = sklearn.metrics.confusion_matrix(y, predictions, labels=nums)
+
+        sns.heatmap(
+            confusion_matrix,
+            square=True, annot=True, cbar=False, fmt="d",
+            xticklabels=nums, yticklabels=nums,
+        )
+        plt.xlabel("prediction")
+        plt.ylabel("true")
 
         plt.show()

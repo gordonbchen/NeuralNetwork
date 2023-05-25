@@ -28,5 +28,10 @@ X_train, y_train, X_test, y_test = load_data()
 nn = NeuralNetwork()
 nn.train(X_train, y_train, 500)
 
+# Show test set accuracy.
+accuracy = nn.get_accuracy(X_test, y_test)
+print(f"\nTest set accuracy: {accuracy}")
+
 # Show predictions.
 nn.display_image_predictions(X_test, y_test)
+nn.display_prediction_confusion_matrix(X_test, y_test)
