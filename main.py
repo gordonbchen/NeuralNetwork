@@ -26,4 +26,7 @@ X_train, y_train, X_test, y_test = load_data()
 
 # Create neural network.
 nn = NeuralNetwork()
-nn.train(X_train, y_train, 1_000)
+nn.train(X_train, y_train, 500)
+
+# Show predictions.
+nn.display_image_predictions(X_test, y_test)

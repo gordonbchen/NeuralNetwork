@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 import functions
 
@@ -97,3 +98,26 @@ class NeuralNetwork:
         self.b1 -= db1 * learning_rate
         self.W2 -= dW2 * learning_rate
         self.b2 -= db2 * learning_rate
+
+    def display_image_predictions(self, X, y):
+        """Display the network's predictions."""
+        Z1, A1, Z2, A2 = self.forward_prop(X)
+        predictions = functions.one_hot_decode(A2)
+
+        fig, axs = plt.subplots(
+            nrows=10, ncols=10,
+            figsize=(15, 15),
+            subplot_kw=dict(xticks=[], yticks=[]),
+            gridspec_kw=dict(hspace=0, wspace=0)
+        )
+        for (i, axi) in enumerate(axs.flat):
+            axi.imshow(X[i, :].reshape(28, 28), cmap="binary")
+            axi.text(
+                x=0.05, y=0.05,
+                s=str(predictions[i]),
+                c=("green" if predictions[i] == y[i] else "red"),
+                transform=axi.transAxes
+            )
+
+        fig.show()
+        input()
