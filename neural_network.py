@@ -7,14 +7,14 @@ class NeuralNetwork:
         """Initialize weights and biases, and hyperparameters."""
         # Layer 1.
         self.W1 = np.random.random(12 * 784).reshape(12, 784) - 0.5
-        self.b1 = np.random.random(12).reshape(12, 1) - 0.5
+        self.b1 = np.random.random(12) - 0.5
 
         self.f1 = functions.ReLU
         self.f1_deriv = functions.ReLU_deriv
 
         # Layer 2.
         self.W2 = np.random.random(10 * 12).reshape(10, 12) - 0.5
-        self.b2 = np.random.random(10).reshape(10, 1) - 0.5
+        self.b2 = np.random.random(10) - 0.5
 
         self.f2 = functions.softmax
         self.f2_deriv = functions.softmax_deriv
@@ -32,10 +32,10 @@ class NeuralNetwork:
         """Forward-prop to get the network's output."""
         X = X.T
 
-        Z1 = np.dot(self.W1, X) + self.b1
+        Z1 = np.dot(self.W1, X) + self.b1[:, np.newaxis]
         A1 = self.f1(Z1)
 
-        Z2 = np.dot(self.W2, A1) + self.b2
+        Z2 = np.dot(self.W2, A1) + self.b2[:, np.newaxis]
         A2 = self.f2(Z2)
         return Z1, A1, Z2, A2
     
@@ -50,13 +50,13 @@ class NeuralNetwork:
         dZ2 = A2 - one_hot_Y
 
         dW2 = np.dot(dZ2, A1.T) / y.size
-        db2 = np.mean(dZ2, axis=1)[:, np.newaxis]
+        db2 = np.mean(dZ2, axis=1)
 
         dA1 = np.dot(self.W2.T, dZ2)
         dZ1 = dA1 * self.f1_deriv(Z1)
 
         dW1 = np.dot(dZ1, X) / y.size
-        db1 = np.mean(dZ1, axis=1)[:, np.newaxis]
+        db1 = np.mean(dZ1, axis=1)
         return dW1, db1, dW2, db2
     
     def apply_gradients(self, dW1, db1, dW2, db2, learning_rate):
