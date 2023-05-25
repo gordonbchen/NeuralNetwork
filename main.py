@@ -9,13 +9,15 @@ def load_data():
     np.random.shuffle(data)
 
     X = data[:, 1:]
+    X = X / X.max()
+
     y = data[:, 0]
 
-    X_train = X[: 1_000, :]
-    y_train = y[: 1_000]
+    X_train = X[: 2_000, :]
+    y_train = y[: 2_000]
 
-    X_test = X[1_000 :, :]
-    y_test = y[1_000 :]
+    X_test = X[2_000 :, :]
+    y_test = y[2_000 :]
 
     return X_train, y_train, X_test, y_test
 
@@ -24,4 +26,4 @@ X_train, y_train, X_test, y_test = load_data()
 
 # Create neural network.
 nn = NeuralNetwork()
-nn.train(X_train, y_train, 10_000)
+nn.train(X_train, y_train, 1_000)
