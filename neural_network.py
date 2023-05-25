@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import sklearn.metrics
 import seaborn as sns
 
+import json
+
 import functions
 
 class NeuralNetwork:
@@ -145,3 +147,30 @@ class NeuralNetwork:
         plt.ylabel("true")
 
         plt.show()
+
+
+    def save_trained_params(self, file_name):
+        trained_params = {
+            "layer1" : {
+                "weights" : self.W1.tolist(),
+                "biases" : self.b1.tolist()
+            },
+
+            "layer2" : {
+                "weights" : self.W2.tolist(),
+                "biases" : self.b2.tolist()
+            }
+        }
+
+        with open(file_name, mode="w") as f:
+            json.dump(trained_params, f)
+
+    def load_trained_params(self, file_name):
+        with open(file_name, mode="r") as f:
+            trained_params = json.load(f)
+        
+        self.W1 = np.array(trained_params["layer1"]["weights"])
+        self.b1 = np.array(trained_params["layer1"]["biases"])
+
+        self.W2 = np.array(trained_params["layer2"]["weights"])
+        self.b2 = np.array(trained_params["layer2"]["biases"])
