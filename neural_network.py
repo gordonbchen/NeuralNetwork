@@ -26,8 +26,7 @@ class NeuralNetwork:
         self.f_accuracy = functions.get_percent_accuracy
 
         # Hyperparams.
-        self.learning_rate = 0.25
-        self.mini_batch_size = 256
+        self.learning_rate = 0.1
 
     def forward_prop(self, X):
         """Forward-prop to get the network's output."""
@@ -44,15 +43,17 @@ class NeuralNetwork:
         """Back-prop to find the network's gradient."""
         one_hot_Y = functions.one_hot_encode(y)
 
-        # TODO: check cost function and softmax derivatives.
-        dA2 = self.f_cost_deriv(A2, one_hot_Y)
-        dZ2 = self.f2_deriv(dA2)
+        # TODO: cost function and softmax derivatives.
+        # dA2 = self.f_cost_deriv(A2, one_hot_Y)
+        # dZ2 = self.f2_deriv(dA2)
+
+        dZ2 = A2 - one_hot_Y
 
         dW2 = np.dot(dZ2, A1.T) / y.size
         db2 = np.mean(dZ2, axis=1)[:, np.newaxis]
 
         dA1 = np.dot(self.W2.T, dZ2)
-        dZ1 = dA1 * self.f1_deriv(dA1)
+        dZ1 = dA1 * self.f1_deriv(Z1)
 
         dW1 = np.dot(dZ1, X) / y.size
         db1 = np.mean(dZ1, axis=1)[:, np.newaxis]
@@ -74,15 +75,11 @@ class NeuralNetwork:
     def train(self, X, y, epochs):
         """Train the network for the given epochs."""
         for epoch in range(epochs):
-            for start_index in range(0, y.size, self.mini_batch_size):
-                end_index = start_index + self.mini_batch_size
-                mini_batch_X = X[start_index : end_index, :]
-                mini_batch_y = y[start_index : end_index]
-
-                self.gradient_descent(mini_batch_X, mini_batch_y)
+            # TODO: mini-batches.
+            self.gradient_descent(X, y)
 
             # Show accuracy and cost.
-            if (epoch % 100 == 0):
+            if (epoch % 10 == 0):
                 Z1, A1, Z2, A2 = self.forward_prop(X)
 
                 predictions = functions.one_hot_decode(A2)
