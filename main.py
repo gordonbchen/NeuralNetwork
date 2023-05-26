@@ -27,8 +27,8 @@ X_train, y_train, X_test, y_test = load_data()
 # Create neural network.
 nn = NeuralNetwork()
 
-# Load previously trained params.
-file_name = "trained_params.json"
+# # Load previously trained params.
+# file_name = "trained_params.json"
 # nn.load_trained_params(file_name)
 
 # Train the network.
@@ -43,5 +43,5 @@ nn.display_image_predictions(X_test, y_test)
 nn.display_prediction_confusion_matrix(X_test, y_test)
 nn.display_accuracies_over_epochs(test_set_accuracy)
 
-# Save trained params
-nn.save_trained_params(file_name)
+# # Save trained params
+# nn.save_trained_params(file_name)
