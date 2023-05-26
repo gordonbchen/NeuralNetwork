@@ -29,18 +29,19 @@ nn = NeuralNetwork()
 
 # Load previously trained params.
 file_name = "trained_params.json"
-nn.load_trained_params(file_name)
+# nn.load_trained_params(file_name)
 
 # Train the network.
 nn.train(X_train, y_train, 500)
 
 # Show test set accuracy.
-accuracy = nn.get_accuracy(X_test, y_test)
-print(f"\nTest set accuracy: {accuracy}")
+test_set_accuracy = nn.get_accuracy(X_test, y_test)
+print(f"\nTest set accuracy: {test_set_accuracy}")
 
 # Show predictions.
 nn.display_image_predictions(X_test, y_test)
 nn.display_prediction_confusion_matrix(X_test, y_test)
+nn.display_accuracies_over_epochs(test_set_accuracy)
 
 # Save trained params
 nn.save_trained_params(file_name)
