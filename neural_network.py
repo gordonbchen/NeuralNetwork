@@ -35,13 +35,15 @@ class NeuralNetwork:
 
         # Hyperparams.
         self.learning_rate = 0.1
+        self.mini_batch_size = 256
 
 
     def train(self, X, y, epochs):
         """Train the network for the given epochs."""
         for epoch in range(epochs):
-            # TODO: mini-batches.
-            self.gradient_descent(X, y)
+            for start_index in range(0, y.size, self.mini_batch_size):
+                mini_batch_X, mini_batch_y = self.get_mini_batch(X, y, start_index)
+                self.gradient_descent(mini_batch_X, mini_batch_y)
 
             # Show accuracy.
             if (epoch % 10 == 0):
@@ -53,6 +55,14 @@ class NeuralNetwork:
             np.random.shuffle(inds)
             X = X[inds, :]
             y = y[inds]
+
+    
+    def get_mini_batch(self, X, y, start_index):
+        end_index = start_index + self.mini_batch_size
+
+        mini_batch_X = X[start_index : end_index, :]
+        mini_batch_y = y[start_index : end_index]
+        return mini_batch_X, mini_batch_y
 
 
     def gradient_descent(self, X, y):
