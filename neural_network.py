@@ -33,6 +33,9 @@ class NeuralNetwork:
 
         self.f_accuracy = functions.get_percent_accuracy
 
+        # Save training accuracies across epochs.
+        self.training_accuracies = []
+
         # Hyperparams.
         self.learning_rate = 0.1
         self.mini_batch_size = 256
@@ -40,14 +43,19 @@ class NeuralNetwork:
 
     def train(self, X, y, epochs):
         """Train the network for the given epochs."""
+        self.training_accuracies = []
+
         for epoch in range(epochs):
             for start_index in range(0, y.size, self.mini_batch_size):
                 mini_batch_X, mini_batch_y = self.get_mini_batch(X, y, start_index)
                 self.gradient_descent(mini_batch_X, mini_batch_y)
 
+            # Save epoch accuracy.
+            accuracy = self.get_accuracy(X, y)
+            self.training_accuracies.append(accuracy)
+
             # Show accuracy.
             if (epoch % 10 == 0):
-                accuracy = self.get_accuracy(X, y)
                 print(f"Epoch {epoch}: \t\t accuracy={accuracy}")
 
             # Shuffle data.
@@ -58,6 +66,7 @@ class NeuralNetwork:
 
     
     def get_mini_batch(self, X, y, start_index):
+        """Get the mini batch starting with the given index."""
         end_index = start_index + self.mini_batch_size
 
         mini_batch_X = X[start_index : end_index, :]
@@ -111,11 +120,13 @@ class NeuralNetwork:
 
 
     def get_predictions(self, X):
+        """Get the network's predictions."""
         Z1, A1, Z2, A2 = self.forward_prop(X)
         predictions = functions.one_hot_decode(A2)
         return predictions
 
     def get_accuracy(self, X, y):
+        """Get the network's prediction accuracy."""
         predictions = self.get_predictions(X)
         accuracy = self.f_accuracy(y, predictions)
         return accuracy
@@ -143,6 +154,7 @@ class NeuralNetwork:
         plt.show()
 
     def display_prediction_confusion_matrix(self, X, y):
+        """Show network confusion matrix."""
         nums = np.arange(10)
 
         predictions = self.get_predictions(X)
@@ -158,8 +170,33 @@ class NeuralNetwork:
 
         plt.show()
 
+    def display_accuracies_over_epochs(self, test_set_accuracy):
+        """Show accuracies over epochs and final test set accuracy."""
+        epochs = len(self.training_accuracies)
+        plt.plot(
+            np.arange(epochs),
+            self.training_accuracies,
+            label="Training accuracy"
+        )
+
+        plt.hlines(
+            test_set_accuracy,
+            xmin=0, xmax=epochs,
+            colors="red",
+            label="Final test set accuracy"
+        )
+
+        plt.title("% Training accuracy vs. Epoch")
+        plt.xlabel("Epoch")
+        plt.ylabel("% Training accuracy")
+
+        plt.legend(loc="best")
+
+        plt.show()
+
 
     def save_trained_params(self, file_name):
+        """Save weights and biases to json."""
         trained_params = {
             "layer1" : {
                 "weights" : self.W1.tolist(),
@@ -176,6 +213,7 @@ class NeuralNetwork:
             json.dump(trained_params, f)
 
     def load_trained_params(self, file_name):
+        """Load weights and biases from json."""
         with open(file_name, mode="r") as f:
             trained_params = json.load(f)
         
