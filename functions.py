@@ -38,4 +38,4 @@ def one_hot_decode(Z):
 
 
 def get_percent_accuracy(true_output, guess_output):
-    return np.mean(true_output == guess_output)
+    return np.mean(true_output == guess_output) * 100.0
