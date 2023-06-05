@@ -187,6 +187,6 @@ class NeuralNetwork:
         plt.xlabel("Epoch")
         plt.ylabel("% Training accuracy")
 
-        plt.legend(loc="best")
+        plt.legend(loc="lower right")
 
         plt.show()
