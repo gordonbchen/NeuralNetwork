@@ -37,7 +37,7 @@ class NeuralNetwork:
         self.training_accuracies = []
 
         # Hyperparams.
-        self.learning_rate = 0.1
+        self.learning_rate = 0.25
         self.mini_batch_size = 256
 
 
@@ -95,11 +95,8 @@ class NeuralNetwork:
         """Back-prop to find the network's gradient."""
         one_hot_Y = functions.one_hot_encode(y)
 
-        # TODO: cost function and softmax derivatives.
-        # dA2 = self.f_cost_deriv(A2, one_hot_Y)
-        # dZ2 = self.f2_deriv(dA2)
-
-        dZ2 = A2 - one_hot_Y
+        dA2 = self.f_cost_deriv(A2, one_hot_Y)
+        dZ2 = dA2 * self.f_act2_deriv(Z2)
 
         dW2 = np.dot(dZ2, A1.T) / y.size
         db2 = np.mean(dZ2, axis=1)
