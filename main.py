@@ -28,7 +28,7 @@ X_train, y_train, X_test, y_test = load_data()
 nn = NeuralNetwork()
 
 # Train the network.
-nn.train(X_train, y_train, 200)
+nn.train(X_train, y_train, 500)
 
 # Show test set accuracy.
 test_set_accuracy = nn.get_accuracy(X_test, y_test)
