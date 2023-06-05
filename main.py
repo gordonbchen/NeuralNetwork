@@ -32,7 +32,7 @@ nn = NeuralNetwork()
 # nn.load_trained_params(file_name)
 
 # Train the network.
-nn.train(X_train, y_train, 500)
+nn.train(X_train, y_train, 200)
 
 # Show test set accuracy.
 test_set_accuracy = nn.get_accuracy(X_test, y_test)
