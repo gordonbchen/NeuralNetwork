@@ -33,36 +33,41 @@ class NeuralNetwork:
 
         self.f_accuracy = functions.get_percent_accuracy
 
-        # Save training accuracies across epochs.
+        # Save training and testing accuracies across epochs.
         self.training_accuracies = []
+        self.testing_accuracies = []
+        self.accuracy_resolution = 10
 
         # Hyperparams.
         self.learning_rate = 0.25
         self.mini_batch_size = 256
 
 
-    def train(self, X, y, epochs):
+    def train(self, X_train, y_train, X_test, y_test, epochs):
         """Train the network for the given epochs."""
         self.training_accuracies = []
+        self.testing_accuracies = []
 
         for epoch in range(epochs):
-            for start_index in range(0, y.size, self.mini_batch_size):
-                mini_batch_X, mini_batch_y = self.get_mini_batch(X, y, start_index)
+            for start_index in range(0, y_train.size, self.mini_batch_size):
+                mini_batch_X, mini_batch_y = self.get_mini_batch(X_train, y_train, start_index)
                 self.gradient_descent(mini_batch_X, mini_batch_y)
 
-            # Save epoch accuracy.
-            accuracy = self.get_accuracy(X, y)
-            self.training_accuracies.append(accuracy)
+            if (epoch % self.accuracy_resolution == 0):
+                # Save epoch train and test accuracies.
+                training_accuracy = self.get_accuracy(X_train, y_train)
+                self.training_accuracies.append(training_accuracy)
 
-            # Show accuracy.
-            if (epoch % 10 == 0):
-                print(f"Epoch {epoch}: \t\t accuracy={accuracy}")
+                testing_accuracy = self.get_accuracy(X_test, y_test)
+                self.testing_accuracies.append(testing_accuracy)
 
-            # Shuffle data.
-            inds = np.arange(y.size)
+                print(f"Epoch {epoch}: \t\t training accuracy={training_accuracy}")
+
+            # Shuffle training data.
+            inds = np.arange(y_train.size)
             np.random.shuffle(inds)
-            X = X[inds, :]
-            y = y[inds]
+            X_train = X_train[inds, :]
+            y_train = y_train[inds]
 
     
     def get_mini_batch(self, X, y, start_index):
@@ -167,25 +172,26 @@ class NeuralNetwork:
 
         plt.show()
 
-    def display_accuracies_over_epochs(self, test_set_accuracy):
-        """Show accuracies over epochs and final test set accuracy."""
-        epochs = len(self.training_accuracies)
+    def display_accuracies_over_epochs(self):
+        """Show training and testing accuracies over epochs."""
+        epochs = np.arange(0, len(self.training_accuracies) * self.accuracy_resolution, self.accuracy_resolution)
         plt.plot(
-            np.arange(epochs),
+            epochs,
             self.training_accuracies,
-            label="Training accuracy"
+            label="Training accuracy",
+            color="blue"
         )
 
-        plt.hlines(
-            test_set_accuracy,
-            xmin=0, xmax=epochs,
-            colors="red",
-            label="Final test set accuracy"
+        plt.plot(
+            epochs,
+            self.testing_accuracies,
+            label="Testing accuracy",
+            color="red"
         )
 
-        plt.title("% Training accuracy vs. Epoch")
+        plt.title("% Training and Testing accuracy vs. Epoch")
         plt.xlabel("Epoch")
-        plt.ylabel("% Training accuracy")
+        plt.ylabel("% Accuracy")
 
         plt.legend(loc="lower right")
 
