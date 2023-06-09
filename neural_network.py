@@ -87,9 +87,7 @@ class NeuralNetwork:
 
     def forward_prop(self, X):
         """Forward-prop to get the network's output."""
-        X = X.T
-
-        Z1 = np.dot(self.W1, X) + self.b1[:, np.newaxis]
+        Z1 = np.dot(self.W1, X.T) + self.b1[:, np.newaxis]
         A1 = self.f_act1(Z1)
 
         Z2 = np.dot(self.W2, A1) + self.b2[:, np.newaxis]
