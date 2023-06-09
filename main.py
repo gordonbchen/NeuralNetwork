@@ -13,11 +13,13 @@ def load_data():
 
     y = data[:, 0]
 
-    X_train = X[: 2_000, :]
-    y_train = y[: 2_000]
+    training_size = 20_000
 
-    X_test = X[2_000 :, :]
-    y_test = y[2_000 :]
+    X_train = X[: training_size, :]
+    y_train = y[: training_size]
+
+    X_test = X[training_size :, :]
+    y_test = y[training_size :]
 
     return X_train, y_train, X_test, y_test
 
@@ -28,7 +30,7 @@ X_train, y_train, X_test, y_test = load_data()
 nn = NeuralNetwork()
 
 # Train the network.
-nn.train(X_train, y_train, X_test, y_test, 500)
+nn.train(X_train, y_train, X_test, y_test, 200)
 
 # Show final test set accuracy.
 test_set_accuracy = nn.get_accuracy(X_test, y_test)
