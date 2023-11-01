@@ -4,8 +4,6 @@ import matplotlib.pyplot as plt
 import sklearn.metrics
 import seaborn as sns
 
-import json
-
 import functions
 
 class NeuralNetwork:
